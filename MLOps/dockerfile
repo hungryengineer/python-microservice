@@ -1,0 +1,23 @@
+FROM python:3.10-slim
+
+ARG MODEL_URL=https://huggingface.co/TheBloke/TinyLlama-1.1B-Chat-v1.0-GGUF/resolve/main/TinyLlama-1.1B-Chat-v1.0.Q4_K_M.gguf
+ARG MODEL_NAME=TinyLlama-1.1B-Chat-v1.0.Q4_K_M.gguf
+
+RUN apt-get update && apt-get install -y \
+    build-essential cmake curl git \
+    && apt-get clean && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+
+# Install Python dependencies
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Download TinyLlama GGUF model
+RUN mkdir -p /app/models && \
+    curl -L -o /app/models/${MODEL_NAME} ${MODEL_URL}
+
+COPY . /app
+
+EXPOSE 7860
+CMD ["python", "chat_app.py"]
